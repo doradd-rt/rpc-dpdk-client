@@ -67,7 +67,8 @@ void dpdk_init(int *argc, char ***argv) {
 
   printf("I found %" PRIu8 " ports\n", nb_ports);
 
-  nb_rx_q = rte_lcore_count();
+  /* N-1 workers */
+  nb_rx_q = rte_lcore_count() - 1;
   nb_tx_q = nb_rx_q;
 
   /* Configure the device */
@@ -113,17 +114,18 @@ void dpdk_init(int *argc, char ***argv) {
 }
 
 void dpdk_terminate(void) {
-  int8_t portid = 0;
+  int8_t port_id = 0;
 
-  printf("Closing port %d...", portid);
-  rte_eth_dev_stop(portid);
-  rte_eth_dev_close(portid);
+  printf("Closing port %d...", port_id);
+  rte_eth_dev_stop(port_id);
+  rte_eth_dev_close(port_id);
 }
 
 void dpdk_poll(void) {
   int ret = 0;
   struct rte_mbuf *rx_pkts[BATCH_SIZE];
 
+  printf("I will poll queue: %d\n", RTE_PER_LCORE(queue_id));
   ret = rte_eth_rx_burst(0, RTE_PER_LCORE(queue_id), rx_pkts, BATCH_SIZE);
   if (!ret)
     return;

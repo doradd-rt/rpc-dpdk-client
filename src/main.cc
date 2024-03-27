@@ -17,17 +17,6 @@ static void signal_handler(int signum) {
   }
 }
 
-static int thread_main(void *arg) {
-  uint32_t thread_id = (int)(long)(arg);
-  printf("Worker main\n");
-
-  /* Start plugging your logic here */
-  while (!force_quit)
-    dpdk_poll();
-
-  return 0;
-}
-
 int main(int argc, char **argv) {
   int count, lcore_id, ret = 0;
 
@@ -40,16 +29,15 @@ int main(int argc, char **argv) {
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);
 
-  /* Setup dispatcher workers communication rings */
-  count = rte_lcore_count();
-  printf("There are %d cores\n", count);
+  printf("There are %d cores\n", rte_lcore_count());
 
+  count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
-    rte_eal_remote_launch(thread_main, (void *)(long)count, lcore_id);
+    rte_eal_remote_launch(worker_main, (void *)(long)count, lcore_id);
     count++;
   }
 
-  thread_main((void *)(long)0);
+  manager_main();
 
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
     if (rte_eal_wait_lcore(lcore_id) < 0) {
