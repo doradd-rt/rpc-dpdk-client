@@ -6,3 +6,4 @@
 #define ETH_DEV_RX_QUEUE_SZ 16
 #define BATCH_SIZE 1
 #define LOCAL_IP 0xa000001
+#define ARP_ENTRIES_COUNT 5

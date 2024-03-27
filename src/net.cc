@@ -1,11 +1,9 @@
 #include "net.h"
 #include "config.h"
 
-#define ARP_ENTRIES_COUNT 20
-
 uint32_t local_ip;
 static struct rte_ether_addr known_haddrs[ARP_ENTRIES_COUNT];
-extern const char **arp_entries;
+extern const char *arp_entries[];
 
 static inline int str_to_eth_addr(const char *src, struct rte_ether_addr *dst) {
   if (sscanf(src, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &dst->addr_bytes[0],
