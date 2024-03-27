@@ -4,12 +4,40 @@
 
 #include "base.h"
 #include "net.h"
+#include "rand.h"
+#include "worker.h"
 
 extern "C" {
 #include <rte_lcore.h>
 }
 
 volatile bool force_quit;
+
+class ExpCfg {
+public:
+  RandGen *r;
+  // FIXME: This should be the application payload generator
+  void *a;
+};
+
+static ExpCfg *parse_args(int argc, char **argv) {
+  auto *cfg = new ExpCfg;
+
+  int i = 0;
+  while (i < argc) {
+    if (strcmp(argv[i], "-i") == 0) {
+      i++;
+      cfg->r = create_generator(argv[i]);
+    } else if (strcmp(argv[i], "-a") == 0) {
+      printf("Parse application");
+      i++;
+    }
+
+    i++;
+  }
+
+  return cfg;
+}
 
 static void signal_handler(int signum) {
   if (signum == SIGINT || signum == SIGTERM) {
@@ -32,11 +60,14 @@ int main(int argc, char **argv) {
 
   printf("There are %d cores\n", rte_lcore_count());
 
+  auto *cfg = parse_args(argc, argv);
+
   net_init();
 
   count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
-    rte_eal_remote_launch(worker_main, (void *)(long)count, lcore_id);
+    auto *w = new Worker(cfg->r, count);
+    rte_eal_remote_launch(worker_main, reinterpret_cast<void *>(w), lcore_id);
     count++;
   }
 
