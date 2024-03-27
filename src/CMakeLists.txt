@@ -4,7 +4,7 @@ project(rpc-dpdk-client CXX)
 message("Root directory of the repository: ${CMAKE_SOURCE_DIR}")
 message("Root directory of the repository: ${CMAKE_BINARY_DIR}")
 
-add_executable(client main.cc dpdk.cc worker.cc manager.cc)
+add_executable(client main.cc dpdk.cc worker.cc manager.cc net.cc arp-cfg.cc)
 target_include_directories(client PRIVATE ${CMAKE_BINARY_DIR}/dpdk-install-dir/include)
 
 # Link DPDK

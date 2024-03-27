@@ -8,8 +8,10 @@ int worker_main(void *arg) {
 
   RTE_PER_LCORE(queue_id) = thread_id;
 
-  while (!force_quit)
+  while (!force_quit) {
+    /* Process Responses */
     dpdk_poll();
+  }
 
   return 0;
 }

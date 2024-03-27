@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "base.h"
+#include "net.h"
 
 extern "C" {
 #include <rte_lcore.h>
@@ -30,6 +31,8 @@ int main(int argc, char **argv) {
   signal(SIGTERM, signal_handler);
 
   printf("There are %d cores\n", rte_lcore_count());
+
+  net_init();
 
   count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {

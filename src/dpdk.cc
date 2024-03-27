@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "config.h"
+#include "net.h"
 
 extern "C" {
 #include <rte_eal.h>
@@ -130,9 +131,8 @@ void dpdk_poll(void) {
   if (!ret)
     return;
 
-  printf("I received packet\n");
-
-  /* FIXME: Start your logic from here */
+  for (int i = 0; i < ret; i++)
+    eth_in(rx_pkts[i]);
 }
 
 void dpdk_out(struct rte_mbuf *pkt) {
