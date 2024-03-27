@@ -1,6 +1,6 @@
-#include <iostream>
-#include <cstdio>
 #include <csignal>
+#include <cstdio>
+#include <iostream>
 
 #include "base.h"
 
@@ -8,64 +8,56 @@ extern "C" {
 #include <rte_lcore.h>
 }
 
-
 volatile bool force_quit;
 
-static void signal_handler(int signum)
-{
-	if (signum == SIGINT || signum == SIGTERM) {
-		printf("\n\nSignal %d received, preparing to exit...\n",
-		       signum);
-		force_quit = true;
-	}
+static void signal_handler(int signum) {
+  if (signum == SIGINT || signum == SIGTERM) {
+    printf("\n\nSignal %d received, preparing to exit...\n", signum);
+    force_quit = true;
+  }
 }
 
-static int thread_main(void *arg)
-{
-	uint32_t thread_id = (int)(long)(arg);
+static int thread_main(void *arg) {
+  uint32_t thread_id = (int)(long)(arg);
   printf("Worker main\n");
 
   /* Start plugging your logic here */
-  while(!force_quit)
+  while (!force_quit)
     dpdk_poll();
 
-	return 0;
+  return 0;
 }
 
-int main(int argc, char **argv)
-{
-	int count, lcore_id, ret = 0;
+int main(int argc, char **argv) {
+  int count, lcore_id, ret = 0;
 
-	printf("Hello world\n");
+  printf("Hello world\n");
 
-	dpdk_init(&argc, &argv);
+  dpdk_init(&argc, &argv);
 
-	/* set signal handler for proper exiting */
-	force_quit = false;
-	signal(SIGINT, signal_handler);
-	signal(SIGTERM, signal_handler);
+  /* set signal handler for proper exiting */
+  force_quit = false;
+  signal(SIGINT, signal_handler);
+  signal(SIGTERM, signal_handler);
 
-	/* Setup dispatcher workers communication rings */
-	count = rte_lcore_count();
-	printf("There are %d cores\n", count);
+  /* Setup dispatcher workers communication rings */
+  count = rte_lcore_count();
+  printf("There are %d cores\n", count);
 
-	RTE_LCORE_FOREACH_WORKER(lcore_id)
-	{
-		rte_eal_remote_launch(thread_main, (void *)(long)count,
-				      lcore_id);
-		count++;
-	}
+  RTE_LCORE_FOREACH_WORKER(lcore_id) {
+    rte_eal_remote_launch(thread_main, (void *)(long)count, lcore_id);
+    count++;
+  }
 
-	thread_main((void *)(long)0);
+  thread_main((void *)(long)0);
 
-	RTE_LCORE_FOREACH_WORKER(lcore_id)
-	{
-		if (rte_eal_wait_lcore(lcore_id) < 0) {
-			ret = -1;
-			break;
-		}
-	}
+  RTE_LCORE_FOREACH_WORKER(lcore_id) {
+    if (rte_eal_wait_lcore(lcore_id) < 0) {
+      ret = -1;
+      break;
+    }
+  }
 
-	dpdk_terminate();
-	return ret;
+  dpdk_terminate();
+  return ret;
 }
