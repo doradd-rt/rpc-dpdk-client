@@ -27,7 +27,7 @@ static ExpCfg *parse_args(int argc, char **argv) {
   while (i < argc) {
     if (strcmp(argv[i], "-i") == 0) {
       i++;
-      cfg->r = create_generator(argv[i]);
+      cfg->r = new RandGen(argv[i]);
     } else if (strcmp(argv[i], "-a") == 0) {
       printf("Parse application");
       i++;

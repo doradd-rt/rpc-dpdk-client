@@ -2,23 +2,33 @@
 
 #include <iostream>
 
-class RandGen {
-public:
-  virtual double generate() = 0;
-};
+class FixedGen {
+  public:
+  FixedGen(char *arg)
+  {
+    std::cout << "Will create fixed\n";
+  }
 
-class FixedGen : public RandGen {
   double generate() {
     std::cout << "Will generate Fixed\n";
     return 0;
   }
 };
 
-class ExpGen : public RandGen {
+class ExpGen {
+  public:
+  ExpGen(char *arg)
+  {
+    std::cout << "Will create Exp\n";
+  }
   double generate() {
     std::cout << "Will generate Exp\n";
     return 0;
   }
 };
 
-RandGen *create_generator(char *arg);
+#if defined(FIXED)
+using RandGen = FixedGen;
+#elif defined(EXPONENTIAL)
+using RandGen = ExpGen;
+#endif
