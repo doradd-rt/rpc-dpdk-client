@@ -126,7 +126,6 @@ void dpdk_poll(void) {
   int ret = 0;
   struct rte_mbuf *rx_pkts[BATCH_SIZE];
 
-  printf("I will poll queue: %d\n", RTE_PER_LCORE(queue_id));
   ret = rte_eth_rx_burst(0, RTE_PER_LCORE(queue_id), rx_pkts, BATCH_SIZE);
   if (!ret)
     return;

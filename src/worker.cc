@@ -9,11 +9,7 @@ int worker_main(void *arg) {
 
   RTE_PER_LCORE(queue_id) = w->get_queue_id();
 
-  while (!force_quit) {
-    /* Process Responses */
-    dpdk_poll();
-    break;
-  }
+  w->do_work();
 
   return 0;
 }
