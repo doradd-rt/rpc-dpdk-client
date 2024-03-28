@@ -1,38 +1,47 @@
 #pragma once
 
 #include <iostream>
+#include <random>
 
 class FixedGen {
   uint64_t val;
 
 public:
+  /**
+   * Used for the interarrival distribution.
+   * Assume input in ASCII usec and transform to cycles
+   */
   FixedGen(char *arg) {
-    std::cout << "Will create fixed " << arg << std::endl;
-
-    std::cout << "Assume value in usec and need to transform to cycles";
     uint64_t t = atoi(arg);
     uint64_t hz = rte_get_timer_hz();
-    std::cout << "hz = " << hz << std::endl;
-    std::cout << "t = " << t << std::endl;
     val = (hz * t) / 1e6;
-
-    std::cout << "This will be " << val << std::endl;
   }
 
-  uint64_t generate() {
-    std::cout << "Will generate Fixed\n";
+  FixedGen(uint64_t v) : val(v) {}
 
-    return val;
-  }
+  uint64_t generate() { return val; }
 };
 
 class ExpGen {
+  std::exponential_distribution<double> dist;
+  std::mt19937 gen;
+
 public:
-  ExpGen(char *arg) { std::cout << "Will create Exp\n"; }
-  uint64_t generate() {
-    std::cout << "Will generate Exp\n";
-    return 0;
+  /**
+   * Used for the interarrival distribution.
+   * Assume input in ASCII usec and transform to cycles
+   */
+  ExpGen(char *arg) : gen(std::random_device()()) {
+    uint64_t t = atoi(arg);
+    uint64_t hz = rte_get_timer_hz();
+    uint64_t val = (hz * t) / 1e6;
+    dist = std::exponential_distribution<double>(1.0 / val);
   }
+
+  ExpGen(uint64_t val) : gen(std::random_device()()) {
+    dist = std::exponential_distribution<double>(1.0 / val);
+  }
+  uint64_t generate() { return static_cast<uint64_t>(dist(gen)); }
 };
 
 #if defined(FIXED)
