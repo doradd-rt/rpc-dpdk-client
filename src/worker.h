@@ -26,10 +26,14 @@ class Worker {
     rte_ether_hdr *ethh = rte_pktmbuf_mtod(pkt, rte_ether_hdr *);
     rte_ipv4_hdr *iph = reinterpret_cast<rte_ipv4_hdr *>(ethh + 1);
     rte_udp_hdr *udph = reinterpret_cast<rte_udp_hdr *>(iph + 1);
+    custom_rpc_header *rpch = reinterpret_cast<custom_rpc_header *>(udph + 1);
 
-    char *payload = get_payload_ptr(pkt);
+    char *payload = reinterpret_cast<char *>(rpch + 1);
     uint16_t payload_len = a->prepare_req(payload, get_max_payload_size());
     uint16_t overall_len = payload_len;
+
+    /*There the custom header that we will populate right before transmitting */
+    overall_len += sizeof(custom_rpc_header);
 
     uint16_t rand_src_port = (rand() & 0x3ff) | 0xC00;
     udp_out_prepare(udph, rand_src_port, target->port, overall_len);
@@ -63,6 +67,13 @@ class Worker {
     return get_cyclces_now() + cycles_diff;
   }
 
+  void prepare_custom_header(rte_mbuf *pkt) {
+    custom_rpc_header *rpch = rte_pktmbuf_mtod_offset(
+        pkt, custom_rpc_header *,
+        sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr));
+    rpch->set(get_cyclces_now());
+  }
+
 public:
   Worker(RandGen *r_, AppGen *a_, Target *t, uint32_t q)
       : r(r_), a(a_), target(t), queue_id(q) {}
@@ -83,6 +94,9 @@ public:
 
       /* Get next timestamp */
       deadline = get_next_deadline();
+
+      /* Populate the curstom header with the send timestamp */
+      prepare_custom_header(pkt);
 
       /* Send request */
       dpdk_out(pkt);

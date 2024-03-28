@@ -228,12 +228,6 @@ static inline uint32_t ip_str_to_int(const char *ip) {
   return addr;
 }
 
-static inline char *get_payload_ptr(rte_mbuf *pkt) {
-  char *net_headers = rte_pktmbuf_mtod(pkt, char *);
-  return net_headers + (sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) +
-                        sizeof(rte_udp_hdr) + sizeof(custom_rpc_header));
-}
-
 static inline uint64_t get_max_payload_size() {
   return MAX_PKT_SIZE - (sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) +
                          sizeof(rte_udp_hdr) + sizeof(custom_rpc_header));
