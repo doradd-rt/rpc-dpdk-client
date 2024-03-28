@@ -23,3 +23,11 @@ elseif(EXPONENTIAL)
 else()
   message(FATAL_ERROR "No interarrival distribution set. Compilation failed.")
 endif()
+
+# Configure the application protocol
+if(LOOP)
+  target_compile_definitions(client PRIVATE -DLOOP)
+  message(STATUS "The application protocol will be LOOP")
+else()
+  message(FATAL_ERROR "No interarrival distribution set. Compilation failed.")
+endif()

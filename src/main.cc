@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 
+#include "app.h"
 #include "base.h"
 #include "net.h"
 #include "rand.h"
@@ -16,8 +17,7 @@ volatile bool force_quit;
 class ExpCfg {
 public:
   RandGen *r;
-  // FIXME: This should be the application payload generator
-  void *a;
+  AppGen *a;
 };
 
 static ExpCfg *parse_args(int argc, char **argv) {
@@ -29,8 +29,8 @@ static ExpCfg *parse_args(int argc, char **argv) {
       i++;
       cfg->r = new RandGen(argv[i]);
     } else if (strcmp(argv[i], "-a") == 0) {
-      printf("Parse application");
       i++;
+      cfg->a = new AppGen(argv[i]);
     }
 
     i++;
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
   count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
-    auto *w = new Worker(cfg->r, count);
+    auto *w = new Worker(cfg->r, cfg->a, count);
     rte_eal_remote_launch(worker_main, reinterpret_cast<void *>(w), lcore_id);
     count++;
   }
