@@ -10,6 +10,7 @@
 
 extern "C" {
 #include <rte_cycles.h>
+#include <rte_eal.h>
 #include <rte_mbuf.h>
 }
 
@@ -56,12 +57,6 @@ class Worker {
     return rte_get_timer_cycles();
   }
 
-  inline void wait_till(uint64_t deadline) {
-    // FIXME: Output a notification if the deadline is long past
-    while (get_cyclces_now() < deadline)
-      ;
-  }
-
   uint64_t get_next_deadline() {
     uint64_t cycles_diff = r->generate();
     return get_cyclces_now() + cycles_diff;
@@ -81,16 +76,14 @@ public:
   void do_work() {
     std::cout << "Do work\n";
     uint64_t deadline = get_cyclces_now();
+    auto *pkt = prepare_req();
 
     while (!force_quit) {
       /* Process Responses */
       dpdk_poll();
 
-      /* Generate new request */
-      auto *pkt = prepare_req();
-
-      /* Wait for the amount of time */
-      wait_till(deadline);
+      if (get_cyclces_now() < deadline)
+        continue;
 
       /* Get next timestamp */
       deadline = get_next_deadline();
@@ -100,8 +93,23 @@ public:
 
       /* Send request */
       dpdk_out(pkt);
+
+      /* Generate new request */
+      pkt = prepare_req();
     }
   }
 
   uint32_t get_queue_id() { return queue_id; }
+
+  void process_response(rte_mbuf *pkt) {
+    std::cout << "Will process responce in the worker\n";
+    custom_rpc_header *rpch = rte_pktmbuf_mtod_offset(
+        pkt, custom_rpc_header *,
+        sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr));
+    uint64_t latency = get_cyclces_now() - rpch->get();
+    uint64_t usec = (latency * 1e6) / rte_get_timer_hz();
+    printf("The request took %lu cycles or %lu usec\n", latency, usec);
+  }
 };
+
+RTE_DECLARE_PER_LCORE(Worker *, local_worker);

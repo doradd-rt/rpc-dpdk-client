@@ -15,6 +15,10 @@ extern "C" {
 #include <rte_udp.h>
 }
 
+extern uint32_t local_ip;
+extern const char *arp_entries[];
+extern char local_mac[];
+
 int net_init(void);
 static inline void eth_in(struct rte_mbuf *pkt);
 static inline void eth_out_prepare(struct rte_ether_hdr *ethh, uint16_t h_proto,
@@ -28,9 +32,7 @@ static inline void icmp_in(struct rte_mbuf *pkt);
 static inline void udp_out_prepare(struct rte_udp_hdr *udph, uint16_t src_port,
                                    uint16_t dst_port, uint16_t len);
 struct rte_ether_addr *get_mac_addr(uint32_t ip_addr);
-static void udp_pkt_process(struct rte_mbuf *pkt);
-
-extern uint32_t local_ip;
+void udp_pkt_process(struct rte_mbuf *pkt);
 
 static inline void icmp_echo(struct rte_mbuf *pkt) {
   int iphlen;
@@ -145,7 +147,8 @@ static void arp_reply(struct rte_mbuf *pkt, struct rte_arp_hdr *arph) {
   arph->arp_data.arp_sip = rte_cpu_to_be_32(local_ip);
 
   arph->arp_data.arp_tha = arph->arp_data.arp_sha;
-  rte_eth_macaddr_get(0, &arph->arp_data.arp_sha);
+  // rte_eth_macaddr_get(0, &arph->arp_data.arp_sha);
+  memcpy(&arph->arp_data.arp_sha, local_mac, 6);
 
   struct rte_ether_hdr *ethh = rte_pktmbuf_mtod(pkt, struct rte_ether_hdr *);
   eth_out_prepare(ethh, RTE_ETHER_TYPE_ARP, &arph->arp_data.arp_tha);
@@ -201,7 +204,8 @@ static inline void eth_out_prepare(struct rte_ether_hdr *ethh, uint16_t h_proto,
   }
   /* fill the ethernet header */
   ethh->dst_addr = *dst_haddr;
-  rte_eth_macaddr_get(0, &ethh->src_addr);
+  // rte_eth_macaddr_get(0, &ethh->src_addr);
+  memcpy(&ethh->src_addr, local_mac, 6);
   ethh->ether_type = rte_cpu_to_be_16(h_proto);
 }
 
@@ -211,11 +215,6 @@ static inline void udp_out_prepare(struct rte_udp_hdr *udph, uint16_t src_port,
   udph->dgram_len = rte_cpu_to_be_16(len + sizeof(struct rte_udp_hdr));
   udph->src_port = rte_cpu_to_be_16(src_port);
   udph->dst_port = rte_cpu_to_be_16(dst_port);
-}
-
-static void udp_pkt_process(struct rte_mbuf *pkt) {
-  printf("Process incoming response\n");
-  assert(0);
 }
 
 static inline uint32_t ip_str_to_int(const char *ip) {

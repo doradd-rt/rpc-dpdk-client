@@ -1,9 +1,10 @@
 #include "net.h"
 #include "config.h"
+#include "worker.h"
 
 uint32_t local_ip;
+char local_mac[] = {0xde, 0xad, 0xbe, 0xef, 0x5e, 0xb1};
 static struct rte_ether_addr known_haddrs[ARP_ENTRIES_COUNT];
-extern const char *arp_entries[];
 
 static inline int str_to_eth_addr(const char *src, struct rte_ether_addr *dst) {
   if (sscanf(src, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &dst->addr_bytes[0],
@@ -23,6 +24,11 @@ static void arp_init(void) {
 struct rte_ether_addr *get_mac_addr(uint32_t ip_addr) {
   uint32_t idx = (ip_addr & 0xff) - 1; // FIXME
   return &known_haddrs[idx];
+}
+
+void udp_pkt_process(struct rte_mbuf *pkt) {
+  printf("Process incoming response\n");
+  RTE_PER_LCORE(local_worker)->process_response(pkt);
 }
 
 int net_init() {
