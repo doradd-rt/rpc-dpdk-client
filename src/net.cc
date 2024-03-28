@@ -3,7 +3,6 @@
 #include "worker.h"
 
 uint32_t local_ip;
-char local_mac[] = {0xde, 0xad, 0xbe, 0xef, 0x5e, 0xb1};
 static struct rte_ether_addr known_haddrs[ARP_ENTRIES_COUNT];
 
 static inline int str_to_eth_addr(const char *src, struct rte_ether_addr *dst) {
