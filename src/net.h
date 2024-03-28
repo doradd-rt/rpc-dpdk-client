@@ -1,6 +1,8 @@
 #pragma once
 
 #include "base.h"
+#include "config.h"
+#include "measure-rpc.h"
 #include <stdlib.h>
 
 extern "C" {
@@ -29,13 +31,6 @@ struct rte_ether_addr *get_mac_addr(uint32_t ip_addr);
 static void udp_pkt_process(struct rte_mbuf *pkt);
 
 extern uint32_t local_ip;
-
-static inline struct cc_hdr *get_cc_header(struct rte_mbuf *pkt) {
-  return rte_pktmbuf_mtod_offset(pkt, struct cc_hdr *,
-                                 sizeof(struct rte_ether_hdr) +
-                                     sizeof(struct rte_ipv4_hdr) +
-                                     sizeof(struct rte_udp_hdr));
-}
 
 static inline void icmp_echo(struct rte_mbuf *pkt) {
   int iphlen;
@@ -200,7 +195,6 @@ static inline void eth_in(struct rte_mbuf *pkt) {
 
 static inline void eth_out_prepare(struct rte_ether_hdr *ethh, uint16_t h_proto,
                                    struct rte_ether_addr *dst_haddr) {
-  printf("eth_out_prepare()\n");
   if (ethh == NULL || dst_haddr == NULL) {
     rte_exit(EXIT_FAILURE,
              "eth_out_prepare() received NULL argument. Exiting\n");
@@ -232,4 +226,15 @@ static inline uint32_t ip_str_to_int(const char *ip) {
   }
   addr = RTE_IPV4(a, b, c, d);
   return addr;
+}
+
+static inline char *get_payload_ptr(rte_mbuf *pkt) {
+  char *net_headers = rte_pktmbuf_mtod(pkt, char *);
+  return net_headers + (sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) +
+                        sizeof(rte_udp_hdr) + sizeof(custom_rpc_header));
+}
+
+static inline uint64_t get_max_payload_size() {
+  return MAX_PKT_SIZE - (sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) +
+                         sizeof(rte_udp_hdr) + sizeof(custom_rpc_header));
 }

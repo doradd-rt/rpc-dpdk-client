@@ -1,9 +1,12 @@
 #pragma once
 
+extern "C" {
 #include <rte_mbuf.h>
+}
 
 RTE_DECLARE_PER_LCORE(int, queue_id);
 extern volatile bool force_quit;
+extern rte_mempool *pktmbuf_pool;
 
 /* DPDK functionality */
 void dpdk_init(int *argc, char ***argv);

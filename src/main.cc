@@ -4,6 +4,7 @@
 
 #include "app.h"
 #include "base.h"
+#include "cfg.h"
 #include "net.h"
 #include "rand.h"
 #include "worker.h"
@@ -13,12 +14,6 @@ extern "C" {
 }
 
 volatile bool force_quit;
-
-class ExpCfg {
-public:
-  RandGen *r;
-  AppGen *a;
-};
 
 static ExpCfg *parse_args(int argc, char **argv) {
   auto *cfg = new ExpCfg;
@@ -31,8 +26,13 @@ static ExpCfg *parse_args(int argc, char **argv) {
     } else if (strcmp(argv[i], "-a") == 0) {
       i++;
       cfg->a = new AppGen(argv[i]);
+    } else if (strcmp(argv[i], "-t") == 0) {
+      i++;
+      cfg->t.ip = ip_str_to_int(argv[i]);
+    } else if (strcmp(argv[i], "-p") == 0) {
+      i++;
+      cfg->t.port = atoi(argv[i]);
     }
-
     i++;
   }
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
   count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
-    auto *w = new Worker(cfg->r, cfg->a, count);
+    auto *w = new Worker(cfg->r, cfg->a, &cfg->t, count);
     rte_eal_remote_launch(worker_main, reinterpret_cast<void *>(w), lcore_id);
     count++;
   }
