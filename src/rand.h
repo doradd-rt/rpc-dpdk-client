@@ -3,11 +3,8 @@
 #include <iostream>
 
 class FixedGen {
-  public:
-  FixedGen(char *arg)
-  {
-    std::cout << "Will create fixed\n";
-  }
+public:
+  FixedGen(char *arg) { std::cout << "Will create fixed\n"; }
 
   double generate() {
     std::cout << "Will generate Fixed\n";
@@ -16,11 +13,8 @@ class FixedGen {
 };
 
 class ExpGen {
-  public:
-  ExpGen(char *arg)
-  {
-    std::cout << "Will create Exp\n";
-  }
+public:
+  ExpGen(char *arg) { std::cout << "Will create Exp\n"; }
   double generate() {
     std::cout << "Will generate Exp\n";
     return 0;
