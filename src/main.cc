@@ -6,6 +6,7 @@
 #include "app.h"
 #include "base.h"
 #include "cfg.h"
+#include "manager.h"
 #include "net.h"
 #include "rand.h"
 #include "stats.h"
@@ -82,7 +83,9 @@ int main(int argc, char **argv) {
     count++;
   }
 
-  manager_main(worker_stats);
+  Manager m(worker_stats);
+
+  m.manager_main();
 
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
     if (rte_eal_wait_lcore(lcore_id) < 0) {
