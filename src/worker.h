@@ -123,6 +123,9 @@ public:
     uint64_t latency = get_cyclces_now() - rpch->get();
     uint64_t usec = (latency * 1e6) / rte_get_timer_hz();
     printf("The request took %lu cycles or %lu usec\n", latency, usec);
+
+    // FIXME: Need to sample them
+    s->new_sample(latency);
   }
 
   static int worker_main(void *arg) {

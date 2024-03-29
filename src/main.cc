@@ -1,4 +1,3 @@
-#include <csignal>
 #include <cstdio>
 #include <iostream>
 #include <vector>
@@ -15,7 +14,6 @@ extern "C" {
 #include <rte_lcore.h>
 }
 
-volatile bool force_quit;
 RTE_DEFINE_PER_LCORE(Worker *, local_worker);
 struct rte_mempool *pktmbuf_pool;
 
@@ -24,6 +22,7 @@ public:
   RandGen *r;
   AppGen *a;
   Target t;
+  uint32_t duration;
 };
 
 static ExpCfg *parse_args(int argc, char **argv) {
@@ -43,18 +42,14 @@ static ExpCfg *parse_args(int argc, char **argv) {
     } else if (strcmp(argv[i], "-p") == 0) {
       i++;
       cfg->t.port = atoi(argv[i]);
+    } else if (strcmp(argv[i], "-d") == 0) {
+      i++;
+      cfg->duration = atoi(argv[i]);
     }
     i++;
   }
 
   return cfg;
-}
-
-static void signal_handler(int signum) {
-  if (signum == SIGINT || signum == SIGTERM) {
-    printf("\n\nSignal %d received, preparing to exit...\n", signum);
-    force_quit = true;
-  }
 }
 
 static std::vector<Stats *> prepare_data_stores(uint8_t workers_count) {
@@ -71,11 +66,6 @@ int main(int argc, char **argv) {
   printf("Hello world\n");
 
   DPDKManager::dpdk_init(&argc, &argv);
-
-  /* set signal handler for proper exiting */
-  force_quit = false;
-  signal(SIGINT, signal_handler);
-  signal(SIGTERM, signal_handler);
 
   printf("There are %d cores\n", rte_lcore_count());
 
@@ -94,7 +84,7 @@ int main(int argc, char **argv) {
 
   Manager m(worker_stats);
 
-  m.manager_main();
+  m.manager_main(cfg->duration);
 
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
     if (rte_eal_wait_lcore(lcore_id) < 0) {
