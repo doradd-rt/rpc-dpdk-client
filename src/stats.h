@@ -4,8 +4,10 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <stdlib.h>
 
 const uint32_t SAMPLES = 4096;
+const double SAMPLING_RATE = 0.1;
 
 struct StatsControl {
   bool should_load;
@@ -31,10 +33,14 @@ public:
   void start_load() { control.should_load = true; }
   void stop_measure() { control.should_measure = false; }
   void start_measure() { control.should_measure = true; }
+
   bool should_load() { return control.should_load; }
+
   void new_sample(uint64_t sample) {
-    samples[current_idx++ % SAMPLES] = sample;
+    if (drand48() < SAMPLING_RATE)
+      samples[current_idx++ % SAMPLES] = sample;
   }
+
   uint64_t get_req_count() { return req_count; }
   uint64_t *get_samples() { return samples; }
 
