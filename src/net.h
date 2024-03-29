@@ -233,3 +233,11 @@ static inline uint32_t ip_str_to_int(const char *ip) {
   addr = RTE_IPV4(a, b, c, d);
   return addr;
 }
+
+static inline int str_to_eth_addr(const char *src, struct rte_ether_addr *dst) {
+  if (sscanf(src, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &dst->addr_bytes[0],
+             &dst->addr_bytes[1], &dst->addr_bytes[2], &dst->addr_bytes[3],
+             &dst->addr_bytes[4], &dst->addr_bytes[5]) != 6)
+    return -1;
+  return 0;
+}
