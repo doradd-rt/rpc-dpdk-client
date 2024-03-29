@@ -4,6 +4,7 @@
 
 #include "app.h"
 #include "dpdk.h"
+#include "measure-rpc.h"
 #include "net.h"
 #include "rand.h"
 #include "stats.h"
@@ -28,6 +29,11 @@ class Worker {
   Stats *s;
   Target *target;
   uint32_t queue_id;
+
+  inline uint64_t get_max_payload_size() {
+    return MAX_PKT_SIZE - (sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) +
+                           sizeof(rte_udp_hdr) + sizeof(custom_rpc_header));
+  }
 
   rte_mbuf *prepare_req() {
     std::cout << "Will prepare a request\n";

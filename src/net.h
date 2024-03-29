@@ -1,7 +1,6 @@
 #pragma once
 
 #include "config.h"
-#include "measure-rpc.h"
 
 #include <stdlib.h>
 
@@ -233,9 +232,4 @@ static inline uint32_t ip_str_to_int(const char *ip) {
   }
   addr = RTE_IPV4(a, b, c, d);
   return addr;
-}
-
-static inline uint64_t get_max_payload_size() {
-  return MAX_PKT_SIZE - (sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) +
-                         sizeof(rte_udp_hdr) + sizeof(custom_rpc_header));
 }
