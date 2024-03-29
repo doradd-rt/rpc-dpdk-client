@@ -5,7 +5,6 @@
 
 #include "app.h"
 #include "base.h"
-#include "cfg.h"
 #include "manager.h"
 #include "net.h"
 #include "rand.h"
@@ -18,6 +17,13 @@ extern "C" {
 
 volatile bool force_quit;
 RTE_DEFINE_PER_LCORE(Worker *, local_worker);
+
+struct ExpCfg {
+public:
+  RandGen *r;
+  AppGen *a;
+  Target t;
+};
 
 static ExpCfg *parse_args(int argc, char **argv) {
   auto *cfg = new ExpCfg;

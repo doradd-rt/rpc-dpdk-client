@@ -4,7 +4,6 @@
 
 #include "app.h"
 #include "base.h"
-#include "cfg.h"
 #include "net.h"
 #include "rand.h"
 #include "stats.h"
@@ -14,6 +13,11 @@ extern "C" {
 #include <rte_eal.h>
 #include <rte_mbuf.h>
 }
+
+struct Target {
+  uint32_t ip;
+  uint16_t port;
+};
 
 class Worker;
 RTE_DECLARE_PER_LCORE(Worker *, local_worker);
