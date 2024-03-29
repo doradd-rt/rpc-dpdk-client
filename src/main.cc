@@ -17,6 +17,7 @@ extern "C" {
 }
 
 volatile bool force_quit;
+RTE_DEFINE_PER_LCORE(Worker *, local_worker);
 
 static ExpCfg *parse_args(int argc, char **argv) {
   auto *cfg = new ExpCfg;
@@ -79,7 +80,8 @@ int main(int argc, char **argv) {
   count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
     auto *w = new Worker(cfg->r, cfg->a, worker_stats[count], &cfg->t, count);
-    rte_eal_remote_launch(worker_main, reinterpret_cast<void *>(w), lcore_id);
+    rte_eal_remote_launch(Worker::worker_main, reinterpret_cast<void *>(w),
+                          lcore_id);
     count++;
   }
 

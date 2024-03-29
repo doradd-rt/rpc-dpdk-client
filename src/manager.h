@@ -3,6 +3,8 @@
 
 #include "base.h"
 
+extern volatile bool force_quit;
+
 class Manager {
   std::vector<Stats *> workers;
 

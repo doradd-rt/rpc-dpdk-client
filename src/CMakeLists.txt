@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(rpc-dpdk-client CXX)
 
-add_executable(client main.cc dpdk.cc worker.cc net.cc arp-cfg.cc)
+add_executable(client main.cc dpdk.cc net.cc arp-cfg.cc)
 target_include_directories(client PRIVATE ${CMAKE_BINARY_DIR}/dpdk-install-dir/include)
 
 # Link DPDK

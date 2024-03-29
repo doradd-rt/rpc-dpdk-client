@@ -15,6 +15,9 @@ extern "C" {
 #include <rte_mbuf.h>
 }
 
+class Worker;
+RTE_DECLARE_PER_LCORE(Worker *, local_worker);
+
 class Worker {
   RandGen *r;
   AppGen *a;
@@ -111,6 +114,16 @@ public:
     uint64_t usec = (latency * 1e6) / rte_get_timer_hz();
     printf("The request took %lu cycles or %lu usec\n", latency, usec);
   }
-};
 
-RTE_DECLARE_PER_LCORE(Worker *, local_worker);
+  static int worker_main(void *arg) {
+    Worker *w = reinterpret_cast<Worker *>(arg);
+    printf("Worker main: %d\n", w->get_queue_id());
+
+    RTE_PER_LCORE(queue_id) = w->get_queue_id();
+    RTE_PER_LCORE(local_worker) = w;
+
+    w->do_work();
+
+    return 0;
+  }
+};
