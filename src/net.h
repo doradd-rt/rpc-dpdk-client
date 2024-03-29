@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base.h"
 #include "config.h"
 #include "measure-rpc.h"
 

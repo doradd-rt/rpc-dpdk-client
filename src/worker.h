@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "app.h"
-#include "base.h"
+#include "dpdk.h"
 #include "net.h"
 #include "rand.h"
 #include "stats.h"
@@ -88,7 +88,7 @@ public:
 
     while (s->should_load()) {
       /* Process Responses */
-      dpdk_poll(queue_id);
+      DPDKManager::dpdk_poll(queue_id);
 
       if (get_cyclces_now() < deadline)
         continue;
@@ -100,7 +100,7 @@ public:
       prepare_custom_header(pkt);
 
       /* Send request */
-      dpdk_out(pkt, queue_id);
+      DPDKManager::dpdk_out(pkt, queue_id);
 
       /* Generate new request */
       pkt = prepare_req();

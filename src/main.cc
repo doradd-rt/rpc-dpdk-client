@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "app.h"
-#include "base.h"
+#include "dpdk.h"
 #include "manager.h"
 #include "net.h"
 #include "rand.h"
@@ -17,6 +17,7 @@ extern "C" {
 
 volatile bool force_quit;
 RTE_DEFINE_PER_LCORE(Worker *, local_worker);
+struct rte_mempool *pktmbuf_pool;
 
 struct ExpCfg {
 public:
@@ -69,7 +70,7 @@ int main(int argc, char **argv) {
 
   printf("Hello world\n");
 
-  dpdk_init(&argc, &argv);
+  DPDKManager::dpdk_init(&argc, &argv);
 
   /* set signal handler for proper exiting */
   force_quit = false;
@@ -102,6 +103,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  dpdk_terminate();
+  DPDKManager::dpdk_terminate();
   return ret;
 }

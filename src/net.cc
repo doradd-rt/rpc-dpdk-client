@@ -1,5 +1,6 @@
 #include "net.h"
 #include "config.h"
+#include "dpdk.h"
 #include "worker.h"
 
 uint32_t local_ip;
@@ -39,5 +40,5 @@ int net_init() {
 }
 
 void net_send_pkt(rte_mbuf *pkt) {
-  dpdk_out(pkt, RTE_PER_LCORE(local_worker)->get_queue_id());
+  DPDKManager::dpdk_out(pkt, RTE_PER_LCORE(local_worker)->get_queue_id());
 }

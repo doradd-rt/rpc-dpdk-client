@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "base.h"
+#include "stats.h"
 
 extern volatile bool force_quit;
 
