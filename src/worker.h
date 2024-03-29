@@ -88,7 +88,7 @@ public:
 
     while (s->should_load()) {
       /* Process Responses */
-      dpdk_poll();
+      dpdk_poll(queue_id);
 
       if (get_cyclces_now() < deadline)
         continue;
@@ -100,7 +100,7 @@ public:
       prepare_custom_header(pkt);
 
       /* Send request */
-      dpdk_out(pkt);
+      dpdk_out(pkt, queue_id);
 
       /* Generate new request */
       pkt = prepare_req();
@@ -123,7 +123,6 @@ public:
     Worker *w = reinterpret_cast<Worker *>(arg);
     printf("Worker main: %d\n", w->get_queue_id());
 
-    RTE_PER_LCORE(queue_id) = w->get_queue_id();
     RTE_PER_LCORE(local_worker) = w;
 
     w->do_work();

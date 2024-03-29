@@ -3,6 +3,7 @@
 #include "base.h"
 #include "config.h"
 #include "measure-rpc.h"
+
 #include <stdlib.h>
 
 extern "C" {
@@ -33,6 +34,9 @@ static inline void udp_out_prepare(struct rte_udp_hdr *udph, uint16_t src_port,
 struct rte_ether_addr *get_mac_addr(uint32_t ip_addr);
 void udp_pkt_process(struct rte_mbuf *pkt);
 static void get_local_mac(rte_ether_addr *dst);
+
+// Need to implement that
+void net_send_pkt(rte_mbuf *pkt);
 
 static inline void icmp_echo(struct rte_mbuf *pkt) {
   int iphlen;
@@ -65,7 +69,7 @@ static inline void icmp_echo(struct rte_mbuf *pkt) {
   /* Send the packet */
   pkt->data_len = sizeof(struct rte_ether_hdr) + iphlen + icmplen;
   pkt->pkt_len = pkt->data_len;
-  dpdk_out(pkt);
+  net_send_pkt(pkt);
 }
 
 static inline void icmp_in(struct rte_mbuf *pkt) {
@@ -153,7 +157,7 @@ static void arp_reply(struct rte_mbuf *pkt, struct rte_arp_hdr *arph) {
   eth_out_prepare(ethh, RTE_ETHER_TYPE_ARP, &arph->arp_data.arp_tha);
   pkt->data_len = sizeof(struct rte_ether_hdr) + sizeof(struct rte_arp_hdr);
   pkt->pkt_len = pkt->data_len;
-  dpdk_out(pkt);
+  net_send_pkt(pkt);
 }
 
 void arp_in(struct rte_mbuf *pkt) {

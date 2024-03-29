@@ -13,7 +13,6 @@ extern "C" {
 }
 
 struct rte_mempool *pktmbuf_pool;
-RTE_DEFINE_PER_LCORE(int, queue_id);
 
 void dpdk_init(int *argc, char ***argv) {
   int ret, nb_ports, i;
@@ -122,11 +121,11 @@ void dpdk_terminate(void) {
   rte_eth_dev_close(port_id);
 }
 
-void dpdk_poll(void) {
+void dpdk_poll(uint8_t queue_id) {
   int ret = 0;
   struct rte_mbuf *rx_pkts[BATCH_SIZE];
 
-  ret = rte_eth_rx_burst(0, RTE_PER_LCORE(queue_id), rx_pkts, BATCH_SIZE);
+  ret = rte_eth_rx_burst(0, queue_id, rx_pkts, BATCH_SIZE);
   if (!ret)
     return;
 
@@ -134,11 +133,11 @@ void dpdk_poll(void) {
     eth_in(rx_pkts[i]);
 }
 
-void dpdk_out(struct rte_mbuf *pkt) {
+void dpdk_out(struct rte_mbuf *pkt, uint8_t queue_id) {
   int ret = 0;
 
   while (1) {
-    ret = rte_eth_tx_burst(0, RTE_PER_LCORE(queue_id), &pkt, 1);
+    ret = rte_eth_tx_burst(0, queue_id, &pkt, 1);
     if (ret == 1)
       break;
   }

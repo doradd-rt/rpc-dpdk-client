@@ -37,3 +37,7 @@ int net_init() {
 
   return 0;
 }
+
+void net_send_pkt(rte_mbuf *pkt) {
+  dpdk_out(pkt, RTE_PER_LCORE(local_worker)->get_queue_id());
+}
