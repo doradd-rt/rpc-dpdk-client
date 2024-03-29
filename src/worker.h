@@ -7,6 +7,7 @@
 #include "cfg.h"
 #include "net.h"
 #include "rand.h"
+#include "stats.h"
 
 extern "C" {
 #include <rte_cycles.h>
@@ -17,9 +18,9 @@ extern "C" {
 class Worker {
   RandGen *r;
   AppGen *a;
+  Stats *s;
   Target *target;
   uint32_t queue_id;
-  // Location of results?
 
   rte_mbuf *prepare_req() {
     std::cout << "Will prepare a request\n";
@@ -70,15 +71,15 @@ class Worker {
   }
 
 public:
-  Worker(RandGen *r_, AppGen *a_, Target *t, uint32_t q)
-      : r(r_), a(a_), target(t), queue_id(q) {}
+  Worker(RandGen *r_, AppGen *a_, Stats *s_, Target *t, uint32_t q)
+      : r(r_), a(a_), s(s_), target(t), queue_id(q) {}
 
   void do_work() {
     std::cout << "Do work\n";
     uint64_t deadline = get_cyclces_now();
     auto *pkt = prepare_req();
 
-    while (!force_quit) {
+    while (s->should_load()) {
       /* Process Responses */
       dpdk_poll();
 

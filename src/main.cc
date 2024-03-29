@@ -1,12 +1,14 @@
 #include <csignal>
 #include <cstdio>
 #include <iostream>
+#include <vector>
 
 #include "app.h"
 #include "base.h"
 #include "cfg.h"
 #include "net.h"
 #include "rand.h"
+#include "stats.h"
 #include "worker.h"
 
 extern "C" {
@@ -46,6 +48,14 @@ static void signal_handler(int signum) {
   }
 }
 
+static std::vector<Stats *> prepare_data_stores(uint8_t workers_count) {
+  std::vector<Stats *> res;
+  for (int i = 0; i < workers_count; i++) {
+    res.push_back(new Stats);
+  }
+  return res;
+}
+
 int main(int argc, char **argv) {
   int count, lcore_id, ret = 0;
 
@@ -63,15 +73,16 @@ int main(int argc, char **argv) {
   auto *cfg = parse_args(argc, argv);
 
   net_init();
+  auto worker_stats = prepare_data_stores(rte_lcore_count() - 1);
 
   count = 0;
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
-    auto *w = new Worker(cfg->r, cfg->a, &cfg->t, count);
+    auto *w = new Worker(cfg->r, cfg->a, worker_stats[count], &cfg->t, count);
     rte_eal_remote_launch(worker_main, reinterpret_cast<void *>(w), lcore_id);
     count++;
   }
 
-  manager_main();
+  manager_main(worker_stats);
 
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
     if (rte_eal_wait_lcore(lcore_id) < 0) {

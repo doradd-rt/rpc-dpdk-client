@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+
+#include "stats.h"
 
 extern "C" {
 #include <rte_mbuf.h>
@@ -16,4 +19,4 @@ void dpdk_out(struct rte_mbuf *pkt);
 
 /* Client functionality */
 int worker_main(void *arg);
-int manager_main(void);
+int manager_main(std::vector<Stats *> workers);
