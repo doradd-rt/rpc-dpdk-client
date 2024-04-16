@@ -126,6 +126,8 @@ public:
     uint64_t usec = (latency * 1e6) / rte_get_timer_hz();
     printf("The request took %lu cycles or %lu usec\n", latency, usec);
 
+    rte_pktmbuf_free(pkt);
+
     // FIXME: Need to sample them
     s->new_sample(latency);
   }
