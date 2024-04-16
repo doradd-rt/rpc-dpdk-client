@@ -63,6 +63,8 @@ class Worker {
     pkt->data_len = overall_len;
     pkt->pkt_len = overall_len;
 
+    s->incr_req_count();
+
     return pkt;
   }
 
@@ -116,7 +118,7 @@ public:
   uint32_t get_queue_id() { return queue_id; }
 
   void process_response(rte_mbuf *pkt) {
-    std::cout << "Will process responce in the worker\n";
+    std::cout << "Will process response in the worker\n";
     custom_rpc_header *rpch = rte_pktmbuf_mtod_offset(
         pkt, custom_rpc_header *,
         sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr));

@@ -7,7 +7,7 @@ inf0=veth0
 inf1=veth1
 inf0ip="10.0.0.1/24"
 mac="DE:AD:BE:EF:7B:15"
-infdpdk=tapdpdk
+infdpdk=tapdpdk1
 
 ### Create a bridge
 if ! ip link show $bridge &> /dev/null; then

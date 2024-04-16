@@ -42,6 +42,7 @@ public:
   }
 
   uint64_t get_req_count() { return req_count; }
+  void incr_req_count() { req_count++; }
   uint64_t *get_samples() { return samples; }
 
   // Function to compute the percentile of a vector

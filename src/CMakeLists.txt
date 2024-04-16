@@ -4,9 +4,11 @@ project(rpc-dpdk-client CXX)
 add_executable(client main.cc net.cc)
 target_include_directories(client PRIVATE ${CMAKE_BINARY_DIR}/dpdk-install-dir/include)
 
+target_compile_options(client PRIVATE -Wno-narrowing)
+
 # Link DPDK
 find_package(PkgConfig REQUIRED)
-set(ENV{PKG_CONFIG_PATH} ${CMAKE_BINARY_DIR}/dpdk-install-dir/lib/aarch64-linux-gnu/pkgconfig)
+set(ENV{PKG_CONFIG_PATH} ${CMAKE_SOURCE_DIR}/../build/dpdk-install-dir/lib/x86_64-linux-gnu/pkgconfig)
 pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 
 target_compile_options(client PRIVATE ${LIBDPDK_STATIC_CFLAGS})
@@ -29,5 +31,5 @@ if(LOOP)
   target_compile_definitions(client PRIVATE -DLOOP)
   message(STATUS "The application protocol will be LOOP")
 else()
-  message(FATAL_ERROR "No interarrival distribution set. Compilation failed.")
+  message(FATAL_ERROR "No application protocol. Compilation failed.")
 endif()

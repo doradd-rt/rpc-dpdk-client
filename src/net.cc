@@ -7,6 +7,9 @@
 uint32_t local_ip;
 static struct rte_ether_addr known_haddrs[ARP_ENTRIES_COUNT];
 
+// dbg only
+static uint64_t cnt = 0;
+
 static void arp_init(void) {
   printf("arp_init()\n");
   for (int i = 0; i < ARP_ENTRIES_COUNT; i++)
@@ -21,6 +24,7 @@ struct rte_ether_addr *get_mac_addr(uint32_t ip_addr) {
 
 void udp_pkt_process(struct rte_mbuf *pkt) {
   printf("Process incoming response\n");
+  printf("cnt: %lu\n", cnt++);
   RTE_PER_LCORE(local_worker)->process_response(pkt);
 }
 
