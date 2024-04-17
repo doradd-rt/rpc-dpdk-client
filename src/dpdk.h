@@ -124,7 +124,7 @@ struct DPDKManager {
   static void dpdk_terminate(void) {
     int8_t port_id = 0;
 
-    printf("Closing port %d...", port_id);
+    printf("Closing port %d...\n", port_id);
     rte_eth_dev_stop(port_id);
     rte_eth_dev_close(port_id);
   }

@@ -11,7 +11,7 @@ class Manager {
   std::vector<Stats *> workers;
 
   double compute_throughput(uint64_t duration_milli) {
-    std::cout << "( Duration is " << duration_milli << " ms)";
+    std::cout << "(Duration is " << duration_milli << " ms) ";
     uint64_t all_reqs = 0;
     for (Stats *w : workers) {
       all_reqs += w->get_req_count();
@@ -74,7 +74,7 @@ public:
             .count();
     std::cout << "Throughput is " << compute_throughput(duration_milli) << std::endl;
 
-    std::cout << "Latency 10%\t50%\t90%\t95%\t99%\n";
+    std::cout << "Latency\n 10%\t50%\t90%\t95%\t99%\n";
     for (double p : compute_latency_percentiles())
       std::cout << p << "\t";
     std::cout << std::endl;
