@@ -36,7 +36,7 @@ class Worker {
   }
 
   rte_mbuf *prepare_req() {
-    std::cout << "Will prepare a request\n";
+    //std::cout << "Will prepare a request\n";
     auto *pkt = rte_pktmbuf_alloc(pktmbuf_pool);
     rte_ether_hdr *ethh = rte_pktmbuf_mtod(pkt, rte_ether_hdr *);
     rte_ipv4_hdr *iph = reinterpret_cast<rte_ipv4_hdr *>(ethh + 1);
@@ -63,7 +63,7 @@ class Worker {
     pkt->data_len = overall_len;
     pkt->pkt_len = overall_len;
 
-    s->incr_req_count();
+    /* s->incr_req_count(); */
 
     return pkt;
   }
@@ -118,16 +118,17 @@ public:
   uint32_t get_queue_id() { return queue_id; }
 
   void process_response(rte_mbuf *pkt) {
-    std::cout << "Will process response in the worker\n";
+    //std::cout << "Will process response in the worker\n";
     custom_rpc_header *rpch = rte_pktmbuf_mtod_offset(
         pkt, custom_rpc_header *,
         sizeof(rte_ether_hdr) + sizeof(rte_ipv4_hdr) + sizeof(rte_udp_hdr));
     uint64_t latency = get_cyclces_now() - rpch->get();
     uint64_t usec = (latency * 1e6) / rte_get_timer_hz();
-    printf("The request took %lu cycles or %lu usec\n", latency, usec);
+    //printf("The request took %lu cycles or %lu usec\n", latency, usec);
 
     rte_pktmbuf_free(pkt);
 
+    s->incr_req_count();
     // FIXME: Need to sample them
     s->new_sample(latency);
   }

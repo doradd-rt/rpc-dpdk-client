@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <array>
 
+extern "C" {
+#include <rte_memcpy.h>
+}
+
 #include "random_gen/zipfian_random.h"
 
 class LoopRpc {
@@ -25,6 +29,9 @@ class YCSBRpc {
   static const size_t ROWS_PER_TX = 10;
   static const size_t ROW_COUNT = 10'000'000;
   static const int NrMSBContentionKey = 6;
+
+  // dbg only
+  int rnd = 0;
 
   using Rand = foedus::assorted::ZipfianRandom;
   Rand rand;
@@ -97,17 +104,19 @@ public:
     // Create an instance of Marshalled
     Marshalled data;
 
+    /* static int rnd = 0; */
     // Populate the indices
     auto keys = gen_keys(&rand, contention);
     for (size_t i = 0; i < ROWS_PER_TX; ++i) {
-      data.indices[i] = keys[i];
+      data.indices[i] = (i + rnd * ROWS_PER_TX) % ROW_COUNT;//keys[i];
     }
 
+    rnd++;
     // Set the write_set
-    data.write_set = gen_write_set(contention);
+    data.write_set = 0x3;//gen_write_set(contention);
 
     // Copy data into the payload buffer
-    memcpy(payload, &data, sizeof(Marshalled));
+    rte_memcpy(payload, &data, sizeof(Marshalled));
     return sizeof(Marshalled);
   }
 };

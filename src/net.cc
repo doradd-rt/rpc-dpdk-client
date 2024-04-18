@@ -23,8 +23,7 @@ struct rte_ether_addr *get_mac_addr(uint32_t ip_addr) {
 }
 
 void udp_pkt_process(struct rte_mbuf *pkt) {
-  printf("Process incoming response\n");
-  printf("cnt: %lu\n", cnt++);
+  cnt++;
   RTE_PER_LCORE(local_worker)->process_response(pkt);
 }
 
