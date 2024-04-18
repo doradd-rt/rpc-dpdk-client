@@ -6,6 +6,12 @@ target_include_directories(client PRIVATE ${CMAKE_BINARY_DIR}/dpdk-install-dir/i
 
 target_compile_options(client PRIVATE -Wno-narrowing)
 
+if(CMAKE_BUILD_TYPE MATCHES Release)
+  set(BRANCH "release")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer")
+endif()
+
 # Link DPDK
 find_package(PkgConfig REQUIRED)
 set(ENV{PKG_CONFIG_PATH} ${CMAKE_SOURCE_DIR}/../build/dpdk-install-dir/lib/x86_64-linux-gnu/pkgconfig)
