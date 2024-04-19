@@ -23,6 +23,7 @@ public:
   AppGen *a;
   Target t;
   uint32_t duration;
+  FILE* log;
 };
 
 static ExpCfg *parse_args(int argc, char **argv) {
@@ -45,6 +46,9 @@ static ExpCfg *parse_args(int argc, char **argv) {
     } else if (strcmp(argv[i], "-d") == 0) {
       i++;
       cfg->duration = atoi(argv[i]);
+    } else if (strcmp(argv[i], "-l") == 0) {
+      i++;
+      cfg->log = fopen(argv[i], "a");
     }
     i++;
   }
@@ -84,7 +88,7 @@ int main(int argc, char **argv) {
 
   Manager m(worker_stats);
 
-  m.manager_main(cfg->duration);
+  m.manager_main(cfg->duration, cfg->log);
 
   RTE_LCORE_FOREACH_WORKER(lcore_id) {
     if (rte_eal_wait_lcore(lcore_id) < 0) {

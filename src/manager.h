@@ -11,7 +11,7 @@ class Manager {
   std::vector<Stats *> workers;
 
   double compute_throughput(uint64_t duration_milli) {
-    std::cout << "(Duration is " << duration_milli << " ms) ";
+    /* std::cout << "(Duration is " << duration_milli << " ms) "; */
     uint64_t all_reqs = 0;
     for (Stats *w : workers) {
       all_reqs += w->get_req_count();
@@ -49,7 +49,7 @@ class Manager {
 public:
   Manager(std::vector<Stats *> w) : workers(w) {}
 
-  int manager_main(uint32_t duration) {
+  int manager_main(uint32_t duration, FILE* log) {
     std::cout << "Warmup period: 1 sec\n";
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -79,6 +79,7 @@ public:
       std::cout << p << "\t";
     std::cout << std::endl;
 
+    fprintf(log, "%f %f\n", compute_throughput(duration_milli), compute_latency_percentiles()[4]);
     return 0;
   }
 };
