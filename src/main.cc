@@ -1,6 +1,9 @@
 #include <cstdio>
 #include <iostream>
 #include <vector>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 #include "app.h"
 #include "dpdk.h"
@@ -23,8 +26,26 @@ public:
   AppGen *a;
   Target t;
   uint32_t duration;
-  FILE* log;
+  uint32_t replay_log_size;
+  char* replay_log;
+  FILE* log; // for results
 };
+
+// Map txn logs into memory
+char* mmap_replay_log(char* log_name) {
+  int fd = open(log_name, O_RDONLY);
+  if (fd == -1) 
+  {
+    printf("File not existed\n");
+    exit(1);
+  }
+  struct stat sb;
+  fstat(fd, &sb);
+  char* read_top = reinterpret_cast<char*>(mmap(nullptr, sb.st_size, 
+    PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_POPULATE, fd, 0));
+
+  return read_top;
+}
 
 static ExpCfg *parse_args(int argc, char **argv) {
   auto *cfg = new ExpCfg;
@@ -34,9 +55,15 @@ static ExpCfg *parse_args(int argc, char **argv) {
     if (strcmp(argv[i], "-i") == 0) {
       i++;
       cfg->r = new RandGen(argv[i]);
+    } else if (strcmp(argv[i], "-s") == 0) {
+      i++;
+      char* mmap_ret = mmap_replay_log(argv[i]);
+      cfg->replay_log_size = *(reinterpret_cast<uint32_t*>(mmap_ret));
+      std::cout << "replay log size is " << cfg->replay_log_size << std::endl;
+      cfg->replay_log = mmap_ret + sizeof(uint32_t);
     } else if (strcmp(argv[i], "-a") == 0) {
       i++;
-      cfg->a = new AppGen(argv[i]);
+      cfg->a = new AppGen(argv[i], cfg->replay_log_size, cfg->replay_log);
     } else if (strcmp(argv[i], "-t") == 0) {
       i++;
       cfg->t.ip = ip_str_to_int(argv[i]);

@@ -92,31 +92,44 @@ class YCSBRpc {
     return result;
   }
 
+  uint32_t replay_log_size;
+  uint32_t read_cnt;
+  char* replay_log;
+
 public:
-  YCSBRpc(char *arg) {
+  YCSBRpc(char *arg, uint32_t replay_log_size, char* replay_log) : 
+              replay_log_size(replay_log_size), replay_log(replay_log) {
     rand.init(ROW_COUNT, zipf_s, 1238);
     std::cout << "Will create ycsb workloads\n"; 
+
+    read_cnt = 0;
   }
 
   uint16_t prepare_req(char *payload, uint64_t max_payload_size) {
     memset(payload, 0, max_payload_size);
 
+    const Marshalled* txm = reinterpret_cast<const Marshalled*>(
+      replay_log + 
+      128 * (read_cnt++ % replay_log_size)); // sizeof(entry) is 128
+ 
     // Create an instance of Marshalled
-    Marshalled data;
+    /* Marshalled data; */
 
     /* static int rnd = 0; */
     // Populate the indices
-    auto keys = gen_keys(&rand, contention);
-    for (size_t i = 0; i < ROWS_PER_TX; ++i) {
-      data.indices[i] = (i + rnd * ROWS_PER_TX) % ROW_COUNT;//keys[i];
-    }
+    /* auto keys = gen_keys(&rand, contention); */
+    /* for (size_t i = 0; i < ROWS_PER_TX; ++i) { */
+    /*   printf("txm->indices %u\n", txm->indices[i]); */
+      /* data.indices[i] = (i + rnd * ROWS_PER_TX) % ROW_COUNT;//keys[i]; */
+      /* data.indices[i] = keys[i]; */
+    /* } */
 
-    rnd++;
+    /* rnd++; */
     // Set the write_set
-    data.write_set = 0x3;//gen_write_set(contention);
+    /* data.write_set = 0x3;//gen_write_set(contention); */
 
     // Copy data into the payload buffer
-    rte_memcpy(payload, &data, sizeof(Marshalled));
+    rte_memcpy(payload, txm, sizeof(Marshalled));
     return sizeof(Marshalled);
   }
 };
