@@ -41,7 +41,9 @@ class YCSBRpc {
   struct __attribute__((packed)) Marshalled
   {
     uint32_t indices[ROWS_PER_TX];
-    uint16_t write_set;
+    uint16_t spin_usec;
+    uint64_t cown_ptrs[ROWS_PER_TX];
+    uint8_t pad[6];
   };
 
   std::array<uint32_t, ROWS_PER_TX> gen_keys(Rand* r, int contention)
@@ -92,13 +94,14 @@ class YCSBRpc {
     return result;
   }
 
+  uint16_t spin_usec;
   uint32_t replay_log_size;
   uint32_t read_cnt;
   char* replay_log;
 
 public:
-  YCSBRpc(char *arg, uint32_t replay_log_size, char* replay_log) : 
-              replay_log_size(replay_log_size), replay_log(replay_log) {
+  YCSBRpc(char *arg, uint32_t replay_log_size, char* replay_log, uint16_t spin_usec) : 
+              replay_log_size(replay_log_size), replay_log(replay_log), spin_usec(spin_usec) {
     rand.init(ROW_COUNT, zipf_s, 1238);
     std::cout << "Will create ycsb workloads\n"; 
 
@@ -108,9 +111,11 @@ public:
   uint16_t prepare_req(char *payload, uint64_t max_payload_size) {
     memset(payload, 0, max_payload_size);
 
-    const Marshalled* txm = reinterpret_cast<const Marshalled*>(
+    Marshalled* txm = reinterpret_cast<Marshalled*>(
       replay_log + 
-      128 * (read_cnt++ % replay_log_size)); // sizeof(entry) is 128
+      sizeof(Marshalled) * (read_cnt++ % replay_log_size));
+
+    txm->spin_usec = spin_usec;
  
     // Create an instance of Marshalled
     /* Marshalled data; */

@@ -25,6 +25,7 @@ public:
   RandGen *r;
   AppGen *a;
   Target t;
+  uint16_t spin_usec;
   uint32_t duration;
   uint32_t replay_log_size;
   char* replay_log;
@@ -61,9 +62,12 @@ static ExpCfg *parse_args(int argc, char **argv) {
       cfg->replay_log_size = *(reinterpret_cast<uint32_t*>(mmap_ret));
       std::cout << "replay log size is " << cfg->replay_log_size << std::endl;
       cfg->replay_log = mmap_ret + sizeof(uint32_t);
+    } else if (strcmp(argv[i], "-u") == 0) {
+      i++;
+      cfg->spin_usec = atoi(argv[i]);
     } else if (strcmp(argv[i], "-a") == 0) {
       i++;
-      cfg->a = new AppGen(argv[i], cfg->replay_log_size, cfg->replay_log);
+      cfg->a = new AppGen(argv[i], cfg->replay_log_size, cfg->replay_log, cfg->spin_usec);
     } else if (strcmp(argv[i], "-t") == 0) {
       i++;
       cfg->t.ip = ip_str_to_int(argv[i]);
