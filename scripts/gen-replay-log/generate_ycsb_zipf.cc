@@ -109,8 +109,10 @@ int main(int argc, char** argv)
 
   // Parse the distribution type
   double zipf_s = 0; // Default for uniform
+  bool is_zipfian = false;
   if (strcmp(argv[2], "zipfian") == 0)
   {
+    is_zipfian = true;
     printf("Generating with zipfian distribution\n");
 
     // Check if the -s parameter is provided
@@ -164,7 +166,14 @@ int main(int argc, char** argv)
 
   // Generate log file name
   char log_name[50];
-  snprintf(log_name, sizeof(log_name), "ycsb_%s_%s.txt", argv[2], contention ? "cont" : "no_cont");
+  if (is_zipfian) 
+  {
+    snprintf(log_name, sizeof(log_name), "ycsb_%s_%.2f_%s.txt", argv[2], zipf_s, contention ? "cont" : "no_cont");
+  } 
+  else 
+  {
+    snprintf(log_name, sizeof(log_name), "ycsb_%s_%s.txt", argv[2], contention ? "cont" : "no_cont");
+  }
 
   // Open output log file
   std::ofstream outLog(log_name, std::ios::binary);
