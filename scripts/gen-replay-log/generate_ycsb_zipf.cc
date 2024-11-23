@@ -92,47 +92,100 @@ void gen_bin_txn(Rand* rand, std::ofstream* f, int contention)
 
 int main(int argc, char** argv) 
 {
-  if (argc != 5 || strcmp(argv[1], "-d") != 0 || strcmp(argv[3], "-c") != 0)
+  // Validate minimum and maximum number of arguments
+  if (argc < 5 || argc > 7)
   {
-    fprintf(stderr, "Usage: ./program -d distribution -c contention\n");
+    fprintf(stderr, "Usage: ./program -d distribution [-s zipf_s] -c contention\n");
     return -1;
   }
 
-  double zipf_s = 0; 
-  if (!strcmp(argv[2], "zipfian"))
+  // Validate the -d flag and its value
+  if (strcmp(argv[1], "-d") != 0)
   {
-    zipf_s = 0.9;
-    printf("generating w/ zipfian distribution\n");
+    fprintf(stderr, "Error: Missing or invalid -d flag\n");
+    fprintf(stderr, "Usage: ./program -d distribution [-s zipf_s] -c contention\n");
+    return -1;
   }
-  else if (strcmp(argv[2], "uniform"))
-    fprintf(stderr, "distribution should be uniform or zipfian\n");
 
-  int contention = 0;
-  if (!strcmp(argv[4], "cont"))
+  // Parse the distribution type
+  double zipf_s = 0; // Default for uniform
+  if (strcmp(argv[2], "zipfian") == 0)
   {
-    contention = 1;
-    printf("generating w/ contented accesses\n");
-  } 
+    printf("Generating with zipfian distribution\n");
+
+    // Check if the -s parameter is provided
+    if (argc == 7 && strcmp(argv[3], "-s") == 0)
+    {
+      zipf_s = atof(argv[4]); // Convert to double
+      if (zipf_s <= 0.0)
+      {
+        fprintf(stderr, "Error: zipf_s must be a positive value\n");
+        return -1;
+      }
+      printf("Using custom zipf_s: %.2f\n", zipf_s);
+    } 
+    else if (argc == 5)
+    {
+      zipf_s = 0.9; // Default zipf_s
+      printf("Using default zipf_s: 0.9\n");
+    }
+    else
+    {
+      fprintf(stderr, "Usage: ./program -d distribution [-s zipf_s] -c contention\n");
+      return -1;
+    }
+  }
+  else if (strcmp(argv[2], "uniform") == 0)
+  {
+    printf("Generating with uniform distribution\n");
+    zipf_s = 0; // No additional parameter needed
+  }
   else
   {
-    printf("generating w/ No contended accesses\n");
+    fprintf(stderr, "Error: Distribution should be either 'uniform' or 'zipfian'\n");
+    return -1;
   }
 
+  // Validate the -c flag
+  const char* contention_arg = (argc == 7 && strcmp(argv[3], "-s") == 0) ? argv[6] : argv[4];
+  if (strcmp(contention_arg, "cont") != 0 && strcmp(contention_arg, "no_cont") != 0)
+  {
+    fprintf(stderr, "Error: Missing or invalid contention argument. Must be 'cont' or 'no_cont'\n");
+    fprintf(stderr, "Usage: ./program -d distribution [-s zipf_s] -c contention\n");
+    return -1;
+  }
+
+  int contention = (strcmp(contention_arg, "cont") == 0) ? 1 : 0;
+  printf("Generating with %s accesses\n", contention ? "contended" : "no contended");
+
+  // Initialize random generator
   Rand rand;
   rand.init(ROW_COUNT, zipf_s, 1238);
 
+  // Generate log file name
   char log_name[50];
-  snprintf(log_name, sizeof(log_name), "ycsb_%s_%s.txt", argv[2], argv[4]);
+  snprintf(log_name, sizeof(log_name), "ycsb_%s_%s.txt", argv[2], contention ? "cont" : "no_cont");
 
+  // Open output log file
   std::ofstream outLog(log_name, std::ios::binary);
+  if (!outLog)
+  {
+    fprintf(stderr, "Error: Unable to open output log file: %s\n", log_name);
+    return -1;
+  }
+
+  // Write transaction count to the log
   uint32_t count = TX_COUNT;
   outLog.write(reinterpret_cast<const char*>(&count), sizeof(uint32_t));
 
-  for (int i = 0; i < TX_COUNT; i++) 
+  // Generate transactions
+  for (int i = 0; i < TX_COUNT; i++)
   {
     gen_bin_txn(&rand, &outLog, contention);
   }
 
   outLog.close();
+  printf("Log file generated: %s\n", log_name);
+
   return 0;
 }
