@@ -220,9 +220,7 @@ static inline void udp_out_prepare(struct rte_udp_hdr *udph, uint16_t src_port,
 
 static inline void get_local_mac(rte_ether_addr *dst) {
   // This does not work with the TAP device
-  rte_eth_macaddr_get(0, dst);
-  //char local_mac[] = {0xb8, 0x3f, 0xd2, 0x2a, 0xe7, 0x69};
-  //memcpy(dst, local_mac, 6);
+  rte_eth_macaddr_get(PORT_ID, dst);
 }
 
 static inline uint32_t ip_str_to_int(const char *ip) {
